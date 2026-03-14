@@ -34,17 +34,32 @@ vim.api.nvim_create_autocmd("TermOpen", {
 -- :Cmd for async shell commands
 vim.api.nvim_create_user_command("Cmd", function()
   local cmd = vim.fn.input("command: ")
+  local stderr_lines = {}
+
   vim.fn.jobstart(cmd, {
     stdout_buffered = true,
+    stderr_buffered = true,
+
     on_stdout = function(_, data)
       if data and #data > 0 then
         vim.fn.setqflist({}, ' ', { title = cmd, lines = data })
         vim.cmd("copen")
       end
     end,
+
     on_stderr = function(_, data)
-      if data and #data > 0 then
-        print("Error: " .. table.concat(data, "\n"))
+      if data then
+        for _, line in ipairs(data) do
+          if line ~= "" then
+            table.insert(stderr_lines, line)
+          end
+        end
+      end
+    end,
+
+    on_exit = function()
+      if #stderr_lines > 0 then
+        print("Error:\n" .. table.concat(stderr_lines, "\n"))
       end
     end,
   })

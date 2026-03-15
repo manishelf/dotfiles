@@ -10,6 +10,8 @@ vim.opt.softtabstop = 2
 vim.opt.expandtab = true
 vim.opt.signcolumn = "yes"
 vim.opt.swapfile = false
+vim.opt.wildmenu = true -- for having auto-completion in command pane
+
 -- search
 vim.opt.ignorecase = true
 vim.opt.smartcase = true

@@ -10,7 +10,7 @@ vim.opt.softtabstop = 2
 vim.opt.expandtab = true
 vim.opt.signcolumn = "yes"
 vim.opt.swapfile = false
-vim.opt.wildmenu = true -- for having auto-completion in command pane
+vim.opt.wildmenu = true -- for having auto-completion in command pane with tab
 
 -- search
 vim.opt.ignorecase = true
@@ -291,7 +291,9 @@ local cmp = require("cmp")
 local capabilities = require('cmp_nvim_lsp').default_capabilities()
 cmp.setup({
   sources = {
-    { name = 'nvim_lsp' }
+    { name = 'nvim_lsp' },
+    { name = "buffer" },
+    { name = "path" },
   },
 
   completion = {
@@ -309,8 +311,8 @@ cmp.setup({
   mapping = cmp.mapping.preset.insert({
     ["<C-Space>"] = cmp.mapping.complete(),
     ["<CR>"] = cmp.mapping.confirm({ select = true }),
-    ["<Tab>"] = cmp.mapping.select_next_item(),
-    ["<S-Tab>"] = cmp.mapping.select_prev_item(),
+    ["<C-n>"] = cmp.mapping.select_next_item(),
+    ["<C-p>"] = cmp.mapping.select_prev_item(),
     ["<Esc>"] = cmp.mapping.abort(),
   }),
 

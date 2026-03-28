@@ -60,16 +60,14 @@ vim.api.nvim_create_user_command("Cmd", function()
 
       if streaming then
         -- streaming mode 
+        local new_items = {}
         for _, line in ipairs(data) do
           if line ~= "" then
-            table.insert(qf_items, { text = line })
+            table.insert(new_items, line)
           end
         end
 
-        vim.fn.setqflist({}, 'r', {
-          title = cmd,
-          items = qf_items,
-        })
+        vim.fn.setqflist({}, 'a', { lines = new_items, title = cmd })
 
         vim.cmd("cbottom")
       else

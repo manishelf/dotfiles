@@ -33,28 +33,59 @@ vim.api.nvim_create_autocmd("TermOpen", {
   end,
 })
 
--- :Cmd for async shell commands
+-- :Cmd for shell commands
 vim.api.nvim_create_user_command("Cmd", function()
   local cmd = vim.fn.input("command: ")
+  local mode = vim.fn.input("mode (s=stream, t=time): ")
+  if mode == "" then mode = "s" end  -- default to streaming
+
   local stderr_lines = {}
+  local qf_items = {}
+
+  local streaming = (mode == "s")
+
+  -- clear quickfix
+  vim.fn.setqflist({}, 'r', { title = cmd })
+
+  if mode == "t" then cmd = "time " .. cmd end -- concat
 
   vim.fn.jobstart(cmd, {
-    stdout_buffered = true,
-    stderr_buffered = true,
+    stdout_buffered = not streaming,
+    stderr_buffered = not streaming,
 
     on_stdout = function(_, data)
-      if data and #data > 0 then
-        vim.fn.setqflist({}, ' ', { title = cmd, lines = data })
-        vim.cmd("copen")
+      if not data then return end
+
+      if streaming then
+        -- streaming mode 
+        for _, line in ipairs(data) do
+          if line ~= "" then
+            table.insert(qf_items, { text = line })
+          end
+        end
+
+        vim.fn.setqflist({}, 'r', {
+          title = cmd,
+          items = qf_items,
+        })
+
+        vim.cmd("cbottom")
+      else
+        -- time mode 
+        if #data > 0 then
+          vim.fn.setqflist({}, ' ', {
+            title = cmd,
+            lines = data,
+          })
+        end
       end
     end,
 
     on_stderr = function(_, data)
-      if data then
-        for _, line in ipairs(data) do
-          if line ~= "" then
-            table.insert(stderr_lines, line)
-          end
+      if not data then return end
+      for _, line in ipairs(data) do
+        if line ~= "" then
+          table.insert(stderr_lines, line)
         end
       end
     end,
@@ -65,7 +96,11 @@ vim.api.nvim_create_user_command("Cmd", function()
       end
     end,
   })
+
+  vim.cmd("copen")
 end, {})
+
+
 
 --grep
 vim.opt.grepprg = "rg --vimgrep --smart-case"

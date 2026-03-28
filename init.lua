@@ -34,6 +34,8 @@ vim.api.nvim_create_autocmd("TermOpen", {
 })
 
 -- :Cmd for shell commands
+_G.current_cmd_job = nil
+
 vim.api.nvim_create_user_command("Cmd", function()
   local cmd = vim.fn.input("command: ")
   local mode = vim.fn.input("mode (s=stream, t=time): ")
@@ -49,7 +51,7 @@ vim.api.nvim_create_user_command("Cmd", function()
 
   if mode == "t" then cmd = "time " .. cmd end -- concat
 
-  vim.fn.jobstart(cmd, {
+  local job_id = vim.fn.jobstart(cmd, {
     stdout_buffered = not streaming,
     stderr_buffered = not streaming,
 
@@ -96,11 +98,19 @@ vim.api.nvim_create_user_command("Cmd", function()
       end
     end,
   })
-
+  _G.current_cmd_job = job_id
   vim.cmd("copen")
 end, {})
 
-
+vim.api.nvim_create_user_command("CmdK", function()
+  if _G.current_cmd_job then
+    vim.fn.jobstop(_G.current_cmd_job)
+    print("Job stopped")
+    _G.current_cmd_job = nil
+  else
+    print("No job running")
+  end
+end, {})
 
 --grep
 vim.opt.grepprg = "rg --vimgrep --smart-case"

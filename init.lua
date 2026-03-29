@@ -47,7 +47,7 @@ vim.api.nvim_create_user_command("Cmd", function()
   local streaming = (mode == "s")
 
   -- clear quickfix
-  vim.fn.setqflist({}, 'r', { title = cmd })
+  vim.fn.setqflist({}, 'r', { title = cmd , lines = {}})
 
   if mode == "t" then cmd = "time " .. cmd end -- concat
 
@@ -73,7 +73,7 @@ vim.api.nvim_create_user_command("Cmd", function()
       else
         -- time mode 
         if #data > 0 then
-          vim.fn.setqflist({}, ' ', {
+          vim.fn.setqflist({}, 'r', {
             title = cmd,
             lines = data,
           })
